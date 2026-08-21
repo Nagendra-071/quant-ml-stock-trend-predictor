@@ -12,11 +12,10 @@ def compute_rsi(series, window=14):
     rsi = 100 - (100 / (1 + rs))
     return rsi.fillna(50)
 
-
 # end is None to fetch data up to today
 def scaled_bse_data(ticker, start="2024-01-01", end=None):
 
-    # Fetch price history using yfinance Ticker API
+    # Fetch price history using yfinance Ticker API 
     df = yf.download(
         ticker, start=start, end=end, auto_adjust=False, progress=False
     )
