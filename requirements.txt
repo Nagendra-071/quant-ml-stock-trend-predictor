@@ -1,5 +1,7 @@
-yfinance
-pandas
 numpy
+pandas
+yfinance
 scikit-learn
+xgboost
 matplotlib
+seaborn
