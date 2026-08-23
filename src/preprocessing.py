@@ -6,19 +6,26 @@ import yfinance as yf
 def compute_rsi(series, window=14):
     """Calculates Relative Strength Index (RSI)."""
     delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()
-    rs = gain / loss.replace(0, np.nan)
+    gain = delta.where(delta > 0, 0.0)
+    loss = -delta.where(delta < 0, 0.0)
+
+    # Use exponential moving average for true Wilder's RSI
+    avg_gain = gain.ewm(alpha=1 / window, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1 / window, adjust=False).mean()
+
+    rs = avg_gain / avg_loss.replace(0, np.nan)
     rsi = 100 - (100 / (1 + rs))
     return rsi.fillna(50)
+
+
 
 # end is None to fetch data up to today
 def scaled_bse_data(ticker, start="2024-01-01", end=None):
 
     # Fetch price history using yfinance Ticker API 
     df = yf.download(
-        ticker, start=start, end=end, auto_adjust=False, progress=False
-    )
+        ticker, start=start, end=end, auto_adjust=True, progress=False
+    )  #auto adjust me change kiya hai 
 
     # Fallback to alternative ticker if initial data is empty
     if df.empty or len(df) <= 2:
@@ -53,7 +60,7 @@ def scaled_bse_data(ticker, start="2024-01-01", end=None):
         {
             # Base features
             "Volume_Raw": volume,
-            "Price_Change": close - open_p,
+            "Price_Change": (close - open_p) / open_p, # change from this close - open_p,
             "Daily_Return": close.pct_change(fill_method=None),
             "Log_Return": log_return,
             "HL_Spread": (high - low) / close,
@@ -64,7 +71,10 @@ def scaled_bse_data(ticker, start="2024-01-01", end=None):
             "Target": (log_return.shift(-1) > 0).astype(int),
         },
         index=df.index,
-    ).dropna()
+    )
+    # CRITICAL FIX: Drop NaNs ONLY from feature columns so today's live prediction row is saved
+    feature_cols = [c for c in df_features.columns if c != "Target"]
+    df_features = df_features.dropna(subset=feature_cols)       #change from thsi .dropna()
 
     if df_features.empty:
         raise ValueError(
