@@ -1,7 +1,17 @@
-numpy
-pandas
-yfinance
-scikit-learn
-xgboost
-matplotlib
-seaborn
+# Data Fetching & Handling
+yfinance==0.2.65
+pandas==2.3.3
+numpy==2.2.6
+
+# Machine Learning & Analytics
+scikit-learn==1.7.1
+xgboost==3.2.0
+
+
+# Visualizations & Plotting
+matplotlib==3.10.6
+seaborn==0.13.2
+plotly==6.3.0
+
+# Interactive Dashboard UI
+streamlit==1.58.0
