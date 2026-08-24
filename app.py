@@ -19,7 +19,6 @@ st.title("Quant Machine Learning Stock Trend Predictor")
 st.markdown("Predict stock direction using an XGBoost Machine Learning model.")
 
 # Stock Selection Tuple
-STOCKS = (
   STOCKS = (
     "ICICIBANK.NS", "SBIN.NS", "PARADEEP.NS", "RELIANCE.NS", "HINDUNILVR.NS", "INFY.NS", 
     "BAJFINANCE.NS", "LICI.NS", "ITC.NS", "LT.NS", "MARUTI.NS", "M&M.NS", "HCLTECH.NS", 
