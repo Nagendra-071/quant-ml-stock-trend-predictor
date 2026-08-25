@@ -55,6 +55,17 @@ def scaled_bse_data(ticker, start="2024-01-01", end=None):
     log_return = np.log(close / close.shift(1))
     sma_10 = close.rolling(window=10).mean()
     sma_50 = close.rolling(window=50).mean()
+    
+    future_log_return = log_return.shift(-1)
+    
+    # Initialize a blank target series filled with NaN
+    target_series = pd.Series(np.nan, index=df.index)
+    
+    # Mask valid historical rows where future return data actually exists
+    valid_mask = future_log_return.notna()
+    
+    # Assign 1 (UP) or 0 (DOWN) ONLY to historical rows, keeping NaN for today's live prediction row
+    target_series[valid_mask] = (future_log_return[valid_mask] > 0).astype(int)
 
     df_features = pd.DataFrame(
         {
@@ -68,7 +79,7 @@ def scaled_bse_data(ticker, start="2024-01-01", end=None):
             "Volatility_20D": log_return.rolling(window=20).std(),
             "RSI_14": compute_rsi(close, window=14),
             # Supervised Target (1 = Tomorrow UP, 0 = Tomorrow DOWN)
-            "Target": (log_return.shift(-1) > 0).astype(int),
+            "Target": target_series,
         },
         index=df.index,
     )

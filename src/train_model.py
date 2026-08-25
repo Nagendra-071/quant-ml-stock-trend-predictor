@@ -35,16 +35,16 @@ def evaluate_walk_forward(df_features, n_splits=5):
         y_train_fold, y_test_fold = y.iloc[train_idx], y.iloc[test_idx]
 
         model = XGBClassifier(
-            n_estimators=50,
-            learning_rate=0.01,
-            max_depth=2,
-            subsample=0.7,
-            colsample_bytree=0.7,
-            gamma=1.0,
-            reg_alpha=0.1,
+            n_estimators=100,
+            learning_rate=0.03,
+            max_depth=3,
+            subsample=0.8,
+            colsample_bytree=0.8,
+            gamma=0.1,
+            reg_alpha=0.05,
             reg_lambda=1.0,
             scale_pos_weight=1.0,
-            min_child_weight=3,
+            min_child_weight=2,
             eval_metric="logloss",
             random_state=42,
         )
@@ -81,12 +81,15 @@ def train_pipeline(ticker="RELIANCE.NS"):
     # 1. Clean feature set
     if "Log_Return" in df_features.columns:
         df_features = df_features.drop(columns=["Log_Return"])
+        
+    df_hist = df_features.dropna(subset=["Target"]).copy()
+    df_live = df_features[df_features["Target"].isna()].copy()
 
     # 2. Walk-Forward Evaluation
-    evaluate_walk_forward(df_features, n_splits=5)
+    evaluate_walk_forward(df_hist, n_splits=5)
 
-    X = df_features.drop(columns=["Target"])
-    y = df_features["Target"].astype(int)
+    X = df_hist.drop(columns=["Target"])
+    y = df_hist["Target"].astype(int)
 
     # 3. Chronological Train-Test Split (80% Train, 20% Test)
     X_train, X_test, y_train, y_test = train_test_split(
@@ -98,18 +101,18 @@ def train_pipeline(ticker="RELIANCE.NS"):
 
     # 4. XGBoost with Regularization
     xgb_model = XGBClassifier(
-        n_estimators=50,
-        learning_rate=0.01,
-        max_depth=2,
-        subsample=0.7,
-        colsample_bytree=0.7,
-        gamma=1.0,
-        reg_alpha=0.1,
+        n_estimators=100,
+        learning_rate=0.03,
+        max_depth=3,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        gamma=0.1,
+        reg_alpha=0.05,
         reg_lambda=1.0,
-        scale_pos_weight=1.0,
-        min_child_weight=3,
+        min_child_weight=2,
         eval_metric="logloss",
         random_state=42,
+        
     )
 
     xgb_model.fit(X_train, y_train)

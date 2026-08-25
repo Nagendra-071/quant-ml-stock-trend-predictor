@@ -17,16 +17,28 @@ def plot_equity_curve(df_bt, ticker="RELIANCE.NS"):
 
 
 def run_backtest(df_features, model, threshold=0.50):
-    X = df_features.drop(columns=["Target"])
-    df_bt = df_features.copy()
-
+    
+    df_bt = df_features.dropna(subset=["Target"]).copy()
+    X = df_bt.drop(columns=["Target"])
+    
+    #to handle misisng Daily_retrun col
+    if "Daily_Return" not in df_bt.columns:
+        if "Close" in df_bt.columns:
+            df_bt["Daily_Return"] = df_bt["Close"].pct_change()
+        elif "Log_Return" in df_bt.columns:
+            df_bt["Daily_Return"] = np.exp(df_bt["Log_Return"]) - 1
+        else:
+            raise KeyError(
+                "Neither 'Daily_Return', 'Close', nor 'Log_Return' found in df_features."
+            )
+            
     # Probabilistic Signal Generation
     probabilities = model.predict_proba(X)[:, 1]
     df_bt['Signal'] = (probabilities >= threshold).astype(int)
     
     # Shift signal by 1 day to prevent lookahead bias 
     df_bt['Strategy_Return'] = df_bt['Signal'].shift(1) * df_bt['Daily_Return']
-    df_bt.dropna(inplace=True)
+    df_bt.dropna(subset=["Strategy_Return"], inplace=True)
 
     # Cumulative growth calculation
     df_bt['Benchmark_Cum'] = (1 + df_bt['Daily_Return']).cumprod()
