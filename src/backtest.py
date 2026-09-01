@@ -19,7 +19,7 @@ def plot_equity_curve(df_bt, ticker="RELIANCE.NS"):
 def run_backtest(df_features, model, threshold=0.50):
     
     df_bt = df_features.dropna(subset=["Target"]).copy()
-    X = df_bt.drop( columns=["Target", "Daily_Return", "Close", "Log_Return"], errors="ignore")
+    X = df_bt.drop(columns=["Target"])
     
     #to handle misisng Daily_retrun col
     if "Daily_Return" not in df_bt.columns:
